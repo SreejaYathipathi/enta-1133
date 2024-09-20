@@ -19,6 +19,7 @@ namespace Lab_Assignment_2
             string gained = "You gained " + difference + " points.";
             Console.WriteLine(gained);
             Console.WriteLine("");
+            //Gives the score value to oldscore and adds new value to score, subtracts oldscore and newscore and assigns it to difference.
         }
 
         public void Play()
@@ -57,6 +58,21 @@ namespace Lab_Assignment_2
             Console.WriteLine("");
             Console.WriteLine("Thank you for reading this.");
             Console.WriteLine("");
+            //Explains what the operation does. 
+            Console.WriteLine("+ is an operation that adds two numbers.");
+            Console.WriteLine("score = oldscore + newscore");
+            Console.WriteLine("- is an operation that subtracts two numbers.");
+            Console.WriteLine("score = oldscore - newscore");
+            Console.WriteLine("* is an operation that multiplies two numbers.");
+            Console.WriteLine("score = oldscore * newscore");
+            Console.WriteLine("++ is an operation that can be used for adding two numbers and assigning the value to the same string.");
+            Console.WriteLine("oldscore ++ newscore");
+            Console.WriteLine("-- is an operation that can be used for subtracts two numbers and assigning the value to the same string.");
+            Console.WriteLine("oldscore -- newscore");
+            Console.WriteLine("/ is an operation that divides two numbers.");
+            Console.WriteLine("score = oldscore / newscore");
+            Console.WriteLine("% is an operation that returns the reminder of two values.");
+            Console.WriteLine();
             Console.WriteLine("Bye bye"); //Ending message.
         }
     }

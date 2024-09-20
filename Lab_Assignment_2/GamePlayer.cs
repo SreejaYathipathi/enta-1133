@@ -46,9 +46,6 @@ namespace Lab_Assignment_2
             Points(Roller.result);
             Roller.RollDice();
             Points(Roller.result);
-
-            score += Roller.result;
-
             //calls the instance RollDice and writes result from it.
         }
 

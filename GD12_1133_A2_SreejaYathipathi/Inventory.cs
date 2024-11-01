@@ -8,92 +8,99 @@ namespace GD12_1133_A2_SreejaYathipathi
 {
     public class Inventory
     {
-        public List<Item> items; // List to store items in the player's inventory
+        public List<Things> things = new List<Things>(); // List to hold items
 
-        public Inventory()
+        public void AddItem(Things item)
         {
-            items = new List<Item>(); // Initialize the item list when creating an Inventory instance
-        }
+            // Check if the item is already in the inventory
+            Consumable existingConsumable = null;
 
-        // Adds an item to the inventory
-        public void AddItem(Item item)
-        {
-            items.Add(item); // Add the given item to the inventory
-            Console.WriteLine("You picked up: " + item.Name); // Inform the player about the added item
-        }
-
-        // Removes an item from the inventory
-        public void RemoveItem(Item item)
-        {
-            if (items.Remove(item)) // Try to remove the specified item from the inventory
+            foreach (var i in things)
             {
-                Console.WriteLine("You used: " + item.Name); // Confirm the item was successfully removed
+                if (i is Consumable consumable && consumable.Name.Equals(item.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    existingConsumable = consumable;
+                    break; // Exit the loop once the item is found
+                }
+            }
+
+            if (existingConsumable != null)
+            {
+                // Increment the count of the existing item (if applicable)
+                if (existingConsumable is Consumable consumable)
+                {
+                    consumable.IncrementCount(); // Implement this in your Consumable class
+                    Console.WriteLine($"You already have {existingConsumable.Name}. You now have {consumable.Count} of them.");
+                }
             }
             else
             {
-                Console.WriteLine("Item not found in inventory."); // Inform the player if the item was not found
+                things.Add(item);
+                Console.WriteLine($"{item.Name} has been added to your inventory.");
             }
+
+            // Show inventory after adding an item
+            ShowInventory();
         }
 
-        // Clears all items from the inventory
-        public void Clear()
+        public bool RemoveItem(Things item)
         {
-            items.Clear(); // Remove all items from the inventory
-        }
-
-        // Checks if there are any consumable items in the inventory
-        public bool HasConsumables()
-        {
-            return items.Any(item => item is Consumables); // Return true if there is at least one consumable item
-        }
-
-        // Displays all consumables in the inventory
-        public void DisplayConsumables()
-        {
-            foreach (var item in items) // Loop through each item in the inventory
+            if (things.Remove(item))
             {
-                if (item is Consumables consumable) // Check if the item is a consumable
+                Console.WriteLine($"{item.Name} has been removed from the inventory.");
+                return true;
+            }
+            else
+            {
+                Console.WriteLine($"{item.Name} not found in the inventory.");
+            }
+            return false;
+        }
+
+        // Check if the player has a specific consumable or weapon
+        public bool HasItem(string itemName)
+        {
+            foreach (var item in things)
+            {
+                if (item.Name.Equals(itemName, StringComparison.OrdinalIgnoreCase))
                 {
-                    Console.WriteLine(consumable.Name); // Display the name of the consumable
+                    return true; // Item found
                 }
             }
+            return false; // Item not found
         }
 
-        // Displays all items in the inventory
-        public void Display()
+        // Check for consumable items in the inventory
+        public bool HasConsumable()
         {
-            if (items.Count == 0) // Check if the inventory is empty
+            return things.OfType<Consumable>().Any();
+        }
+
+        // Check for weapon items in the inventory
+        public bool HasWeapon()
+        {
+            return things.OfType<Weapon>().Any();
+        }
+
+
+
+        public void ShowInventory()
+        {
+            Console.WriteLine("Current Inventory:");
+            if (things.Count == 0)
             {
-                Console.WriteLine("Your inventory is empty."); // Inform the player if the inventory has no items
+                Console.WriteLine("Your inventory is empty.");
                 return;
             }
-
-            Console.WriteLine("Items in your inventory:"); // List all items in the inventory
-            foreach (var item in items) // Loop through the inventory items
+            foreach (var item in things)
             {
-                Console.WriteLine("- " + item.Name); // Display each item's name
-            }
-        }
-
-        // Retrieves a consumable item by its name
-        public Item? GetConsumable(string itemName)
-        {
-            // Loop through each item in the list
-            foreach (var item in items)
-            {
-                // Check if the item name matches the provided name, ignoring case
-                if (item.Name.ToLower() == itemName.ToLower())
+                Console.WriteLine($"- {item.Name}: {item.Description}");
+                if (item is Consumable consumable)
                 {
-                    return item; // Return the item if a match is found
+                    Console.WriteLine($"  Count: {consumable.Count}"); // Assuming Count is a property of Consumable
                 }
             }
-            return null; // Return null if no match is found
         }
-
-        // Checks if there are any weapons in the inventory
-        public bool HasWeapons()
-        {
-            return items.Any(item => item is Weapon); // Return true if there is at least one weapon in the inventory
-        }
+        
     }
 }

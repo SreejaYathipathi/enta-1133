@@ -1,30 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace GD12_1133_A2_SreejaYathipathi
 {
-    // GameManager class handles the overall game logic
-    internal class GameManager
+    public class GameManager
     {
-        public static AsciiArt art = new AsciiArt(); // Instance of AsciiArt for visual elements
-        Player Player = new Player(); // Player instance representing the user
-        private Room? currentRoom; // The room the player is currently in
-        List<Room>? rooms; // List of all rooms in the game
+        public static AsciiArt art = new AsciiArt();
+        public static Player player = new Player(100);
+        public static MapGenerator mapGenerator;
+        private List<Room> rooms;
+        private int currentRoomIndex;
 
-        // Constructor initializes rooms, sets the player's health, and assigns the starting room
-        public void Start()
+        public GameManager()
         {
-            MapGenerator mapGenerator = new MapGenerator(); // Map generator for room creation
-            rooms = mapGenerator.GenerateRooms(); // Generate rooms using the MapGenerator
-            currentRoom = InitializeRooms(); // Set the initial room for the player
-            Player.PlayerHp(100); // Initialize player with full health (e.g., 100)
+            mapGenerator = new MapGenerator(player);
+            rooms = mapGenerator.GetRooms();
+            currentRoomIndex = 0; // Start at the first room
         }
 
-        // Play method starts the game loop
         internal void Play()
         {
             Intro(); // Display introduction
@@ -37,8 +33,8 @@ namespace GD12_1133_A2_SreejaYathipathi
         public void Intro()
         {
             art.Welcome(); // Show welcome ASCII art
-            Player.PlayerName(); // Ask for player's name
-            Player.ChangeName(); // Allow player to change their name
+            player.PlayerName(); // Ask for player's name
+            player.ChangeName(); // Allow player to change their name
         }
 
         // Provides the game rules based on user input
@@ -91,121 +87,43 @@ namespace GD12_1133_A2_SreejaYathipathi
             }
         }
 
-        // Main gameplay loop
         public void GamePlay()
         {
+            Console.WriteLine("Welcome to the Adventure Game!");
+
             while (true)
             {
-                currentRoom.OnEntered(Player); // Trigger OnEntered method for the current room
-                string command = (Console.ReadLine() ?? "").ToLower(); // Get player's command
+                Room currentRoom = rooms[currentRoomIndex];
+                currentRoom.OnEntered(); // Enter the current room
 
-                if (command == "exit") // Exit the game if the player types "exit"
+                // Show commands after the OnEntered logic is done.
+                bool shouldExit = false; // Flag to control room exit
+
+                while (!shouldExit) // Inner loop for handling commands
                 {
-                    Console.WriteLine("Exiting the game. Goodbye!");
-                    break;
-                }
+                    Console.WriteLine("Type 'exit' to exit room, 'inventory' to check inventory, or a direction (north, south, east, west) to move.");
+                    string command = (Console.ReadLine() ?? "").ToLower();
 
-                ProcessCommand(command); // Process the player's command
-            }
-        }
-
-        // Process player commands and trigger respective actions
-        private void ProcessCommand(string command)
-        {
-            switch (command)
-            {
-                case "search":
-                    currentRoom.OnSearched(Player); // Search the current room
-                    break;
-                case "leave":
-                    Console.WriteLine("Which direction do you want to go? (n/s/e/w)");
-                    string direction = (Console.ReadLine() ?? "").ToLower(); // Get the direction
-                    NavigateToRoom(direction); // Navigate to the specified room
-                    break;
-                case "attack":
-                    Console.WriteLine("Which weapon do you want to use?");
-                    string weaponName = Console.ReadLine() ?? ""; // Get the weapon name
-                    Console.WriteLine("Which attack? (z/x/c)");
-                    string attackType = (Console.ReadLine() ?? "").ToLower(); // Get the attack type
-
-                    // Check if the current room is a combat room
-                    if (currentRoom is CombatRoom combatRoom)
+                    if (command == "exit")
                     {
-                        combatRoom.PlayerAttack(weaponName, attackType); // Player performs an attack
+                        currentRoom.OnExited(); // Call OnExited to handle exit logic
+                        shouldExit = true; // Set the flag to exit the inner loop
+                    }
+                    else if (command == "inventory")
+                    {
+                        player.inventory.ShowInventory(); // Show the inventory
+                    }
+                    else if (currentRoom.Connections.ContainsKey(command))
+                    {
+                        currentRoom.OnExited(); // Call OnExited to handle exiting the current room
+                        currentRoomIndex = rooms.IndexOf(currentRoom.Connections[command]); // Move to the new room
+                        shouldExit = true; // Set the flag to exit the inner loop
                     }
                     else
                     {
-                        Console.WriteLine("You can only attack in a combat room!"); // Error if not in combat room
+                        Console.WriteLine("Unknown command. Please try again.");
                     }
-                    break;
-                case "drink":
-                    Console.WriteLine("Which consumable do you want to drink?");
-                    string consumableName = Console.ReadLine() ?? ""; // Get consumable name
-                    Player.DrinkConsumable(consumableName, Player.GetPlayerInventory()); // Player drinks the consumable
-                    break;
-                default:
-                    Console.WriteLine("Invalid command. Try 'search', 'leave', 'attack', or 'drink'."); // Invalid command handler
-                    break;
-            }
-        }
-
-        // Handles room navigation based on player's direction input
-        private void NavigateToRoom(string direction)
-        {
-            int nextRoomIndex = -1;
-
-            switch (direction)
-            {
-                case "n": // Move north
-                    nextRoomIndex = 1; // Example index for north room
-                    break;
-                case "s": // Move south
-                    nextRoomIndex = 2; // Example index for south room
-                    break;
-                case "e": // Move east
-                    nextRoomIndex = 3; // Example index for east room
-                    break;
-                case "w": // Move west
-                    nextRoomIndex = 4; // Example index for west room
-                    break;
-                default:
-                    Console.WriteLine("Invalid direction. Please choose n (north), s (south), e (east), or w (west).");
-                    return; // Invalid direction handler
-            }
-
-            // Check if the next room exists within the room list
-            if (nextRoomIndex >= 0 && nextRoomIndex < rooms.Count)
-            {
-                currentRoom = rooms[nextRoomIndex]; // Move to the next room
-                currentRoom.OnEntered(Player); // Trigger the OnEntered method for the new room
-            }
-            else
-            {
-                Console.WriteLine("There is no room in that direction."); // Handle invalid room transition
-            }
-        }
-
-        // Initializes rooms and sets the starting room
-        private Room InitializeRooms()
-        {
-            return rooms.First(); // Set the initial room to the first room in the list
-        }
-
-        private int currentRoomIndex = 0; // Tracks the index of the current room
-
-        // Gets the next room in the list, wrapping around if needed
-
-        public void NextRoom()
-        {
-            if (currentRoomIndex < rooms.Count - 1) // Check if there's a next room
-            {
-                currentRoomIndex++;
-                Room currentRoom = rooms[currentRoomIndex]; // Get the current room
-                Console.WriteLine($"Entered: {currentRoom.GetType().Name}"); // Display room type
-            }
-            else
-            {
-                Console.WriteLine("No more rooms."); // Handle end of rooms
+                }
             }
         }
     }

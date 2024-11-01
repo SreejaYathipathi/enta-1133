@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GD12_1133_A2_SreejaYathipathi
 {
-    internal class AsciiArt
+    public class AsciiArt
     {
         // Welcome art.
         public void Welcome()

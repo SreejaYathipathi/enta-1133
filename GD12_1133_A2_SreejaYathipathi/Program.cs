@@ -4,8 +4,8 @@
     {
         static void Main(string[] args)
         {
-            GameManager gameManager = new GameManager(); // Create an instance of GameManager
-            gameManager.Play(); // Call the Play method to begin the game
+            GameManager gameManager = new GameManager();
+            gameManager.Play();
         }
     }
 }
